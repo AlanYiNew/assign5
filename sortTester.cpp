@@ -4,7 +4,7 @@
 
 #include <thread>
 
-
+#include <chrono>
 #include "BucketSort.h"
 
 
@@ -46,8 +46,11 @@ int main() {
 
         const unsigned int numCores = std::thread::hardware_concurrency();
 
+        auto start = std::chrono::high_resolution_clock::now();
         pbs.sort(numCores);
-
+        auto finish = std::chrono::high_resolution_clock::now();
+        std::chrono::duration<double> elapsed = finish - start;
+        std::cout << "##" << elapsed.count() << "##"<< std::endl;
 
         std::cout << "number of cores used: " << numCores << std::endl;
 

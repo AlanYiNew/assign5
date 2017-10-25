@@ -79,12 +79,18 @@ void BucketSort::sort(unsigned int numCores) {
         numbers[getMSD(k)-1].push_back(k);
     }
 
+    std::vector<int> count;
+    int temp = 0;
+    for (auto & k:numbers){
+        count.push_back(temp);
+        temp+=k.size();
+    }
 
     std::vector<std::thread> threads;
 
     std::atomic<unsigned int> cur = ATOMIC_VAR_INIT(1);
     for (unsigned int i = 0; i < numCores ; i++){
-        threads.push_back(std::thread([&cur,&numbers](){
+        threads.push_back(std::thread([&,this](){
                     while (true){
                         auto k = std::atomic_fetch_add(&cur,1U);
                         if (k>= 10) break;        
@@ -94,7 +100,7 @@ void BucketSort::sort(unsigned int numCores) {
                             return aLessB(x,y,0);
 
                         });
-                        
+                        std::copy(numbers[k-1].begin(),numbers[k-1].end(),this->numbersToSort.begin()+count[k-1]);              
                     }
         }));
     }
