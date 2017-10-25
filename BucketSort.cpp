@@ -63,11 +63,31 @@ bool aLessB(const unsigned int& x, const unsigned int& y, unsigned int pow) {
 
 }
 
-int getMSD(unsigned int a){
-    while (a >= 10){
-        a /= 10;
+
+
+int getDigit(const std::string* str,unsigned int digit){
+    if (digit >= str->size()) return -1;
+    return str->at(digit) - '0';        
+}
+
+int radix_sort(std::vector<std::string*>::iterator s,
+               std::vector<std::string*>::iterator e, int digit){
+    std::vector<std::vector<std::string*>> bucket(11,std::vector<std::string*>());
+
+    for (auto c = s; c != e; ++c){
+        bucket[getDigit(*c,digit)+1].push_back(*c);
     }
-    return a;
+    
+    //radix sort next digit
+    int accumulate_pos = 0;
+    for (size_t i = 0; i < bucket.size(); ++i){
+        if (bucket[i].size() > 1){
+            radix_sort(bucket[i].begin(),bucket[i].end(),digit+1);
+        }
+        std::copy(bucket[i].begin(),bucket[i].end(),s+accumulate_pos);
+        accumulate_pos += bucket[i].size();
+    }
+    return 0;
 }
 
 
@@ -75,13 +95,15 @@ int getMSD(unsigned int a){
 
 void BucketSort::sort(unsigned int numCores) {
 
-        
-    std::vector<std::vector<unsigned int>> numbers(9,std::vector<unsigned int>());
-
+    std::vector<std::string> numbers;
+    std::vector<std::vector<std::string*>> numbers_bucket(9,std::vector<std::string*>());
     for ( auto k: numbersToSort){
-        numbers[getMSD(k)-1].push_back(k);
+        numbers.push_back(std::to_string(k));
+        auto & last = numbers[numbers.size()-1];
+        numbers_bucket[getDigit(&last,0)-1].push_back(&last);
+        std::cout << getDigit(&last,0)-1 << " " <<last<<std::endl;
     }
-
+    
         
     std::vector<unsigned int> count;
     size_t temp = 0;
@@ -94,21 +116,22 @@ void BucketSort::sort(unsigned int numCores) {
     
     std::atomic<unsigned int> cur = ATOMIC_VAR_INIT(1);
     for (unsigned int i = 0; i < numCores ; i++){
-        auto lambda = [&numbers,&count,&cur,this](){
+        auto lambda = [&,this](){
                     while (true){
                         auto k = std::atomic_fetch_add(&cur,1U);
                         if (k>= 10) break;        
-                         
-
+                                                
+                        std::cout << "xxx" << std::endl;
+                        radix_sort(numbers_bucket[k-1].begin(),numbers_bucket[k-1].end(),1); 
                         
-
-                        std::sort(numbers[k-1].begin(),numbers[k-1].end(), [](const unsigned int& x, const unsigned int& y){
-
-                            return aLessB(x,y,1);
-
-                        });
-                        
-                        std::copy(numbers[k-1].begin(),numbers[k-1].end(),this->numbersToSort.begin()+count[k-1]);                        
+                        std::transform(numbers_bucket[k-1].begin(),
+                                       numbers_bucket[k-1].end(),
+                                       this->numbersToSort.begin()+count[k-1],
+                                       [](std::string* str){
+                                          return std::stoi(*str);
+                                       }
+                                
+                                );                        
 
                     }
                     
@@ -119,3 +142,5 @@ void BucketSort::sort(unsigned int numCores) {
         ref.join();
     }
 }
+
+
