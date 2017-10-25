@@ -71,42 +71,67 @@ int getMSD(unsigned int a){
 }
 
 
+
+
 void BucketSort::sort(unsigned int numCores) {
 
+        
     std::vector<std::vector<unsigned int>> numbers(9,std::vector<unsigned int>());
 
     for ( auto k: numbersToSort){
         numbers[getMSD(k)-1].push_back(k);
     }
+<<<<<<< HEAD
 
     std::vector<int> count;
     int temp = 0;
     for (auto & k:numbers){
         count.push_back(temp);
         temp+=k.size();
+=======
+    
+    std::vector<unsigned int> count;
+    size_t temp = 0;
+    for (auto &k:numbers){
+        count.push_back(temp);
+        temp += k.size();
+>>>>>>> 611809b04c2e1ce7425dccfdc59a7221f05b355b
     }
 
     std::vector<std::thread> threads;
-
+    
     std::atomic<unsigned int> cur = ATOMIC_VAR_INIT(1);
     for (unsigned int i = 0; i < numCores ; i++){
+<<<<<<< HEAD
         threads.push_back(std::thread([&,this](){
+=======
+        auto lambda = [&numbers,&count,&cur,this](){
+>>>>>>> 611809b04c2e1ce7425dccfdc59a7221f05b355b
                     while (true){
                         auto k = std::atomic_fetch_add(&cur,1U);
                         if (k>= 10) break;        
-                        std::cout << k << std::endl; 
+                         
+
+                        
+
                         std::sort(numbers[k-1].begin(),numbers[k-1].end(), [](const unsigned int& x, const unsigned int& y){
 
-                            return aLessB(x,y,0);
+                            return aLessB(x,y,1);
 
                         });
+<<<<<<< HEAD
                         std::copy(numbers[k-1].begin(),numbers[k-1].end(),this->numbersToSort.begin()+count[k-1]);              
+=======
+                        
+                        std::copy(numbers[k-1].begin(),numbers[k-1].end(),this->numbersToSort.begin()+count[k-1]);                        
+
+>>>>>>> 611809b04c2e1ce7425dccfdc59a7221f05b355b
                     }
-        }));
+                    
+        };
+        threads.push_back(std::thread(lambda));
     }
     for (auto & ref: threads){
         ref.join();
     }
-
-        
 }
