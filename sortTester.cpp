@@ -64,7 +64,7 @@ int main() {
 
 		<< " " << pbs.numbersToSort[printIndex] << " " << pbs.numbersToSort[pbs.numbersToSort.size() - 1] 
 
-		<< std::endl;
+ 	<< std::endl;
 
 	
 

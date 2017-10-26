@@ -103,16 +103,16 @@ void BucketSort::sort(unsigned int numCores) {
     for ( auto k: numbersToSort){
         numbers.push_back(std::to_string(k)); 
     }
-  
+ 
     for (auto iter = numbers.begin(); iter != numbers.end(); ++ iter){
 	numbers_bucket[getDigit(*iter,0)-1].push_back(&*iter);
     }
         
     std::vector<unsigned int> count;
     size_t temp = 0;
-    for (auto &k:numbers){
+    for (auto &k:numbers_bucket){
         count.push_back(temp);
-        temp += k.size();
+	temp += k.size();
     }
 
     std::vector<std::thread> threads;
@@ -125,7 +125,7 @@ void BucketSort::sort(unsigned int numCores) {
                         if (k>= 10) break;        
                                                 
                         radix_sort(numbers_bucket[k-1].begin(),numbers_bucket[k-1].end(),1); 
-                        
+                         
                         std::transform(numbers_bucket[k-1].begin(),
                                        numbers_bucket[k-1].end(),
                                        this->numbersToSort.begin()+count[k-1],
