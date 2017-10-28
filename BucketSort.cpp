@@ -6,14 +6,9 @@
 #include <cmath>
 #include <atomic>
 #include <iostream>
+#include <iterator>
 
 
-struct{
-    std::vector<unsigned int>::iterator s;
-    std::vector<unsigned int>::iteartor e;
-    unsigned int digit;
-
-}
 
 int getDigit(const std::string& str,unsigned int digit){
     if (digit >= str.size()) return -1;
@@ -41,7 +36,7 @@ int radix_sort(std::vector<unsigned int>::iterator s,
     int accumulate_pos = 0;
     for (size_t i = 0; i < bucket.size(); ++i){
         radix_sort(bucket[i].begin(),bucket[i].end(),digit+1);
-    	std::copy(bucket[i].begin(),bucket[i].end(),s+accumulate_pos);
+        std::copy(bucket[i].begin(),bucket[i].end(),s+accumulate_pos);
         accumulate_pos += bucket[i].size();
     }
     return 0;
@@ -76,8 +71,8 @@ void BucketSort::sort(unsigned int numCores) {
                         radix_sort(numbers_bucket[k-1].begin(),numbers_bucket[k-1].end(),1); 
                          
                         std::copy(numbers_bucket[k-1].begin(),
-                                       numbers_bucket[k-1].end(),
-                                       this->numbersToSort.begin()+count[k-1]
+                                  numbers_bucket[k-1].end(),
+                                  this->numbersToSort.begin()+count[k-1]
                                 );                        
                     }
                     
