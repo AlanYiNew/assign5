@@ -6,113 +6,62 @@
 #include <cmath>
 #include <atomic>
 #include <iostream>
-bool aLessB(const unsigned int& x, const unsigned int& y, unsigned int pow) {
 
 
-
-    if (x == y) return false; // if the two numbers are the same then one is not less than the other
-
-
-
-    unsigned int a = x;
-
-    unsigned int b = y;
-
-
-
-    // work out the digit we are currently comparing on. 
-
-    if (pow == 0) {
-
-        while (a / 10 > 0) {
-
-            a = a / 10; 
-
-        }   
-
-        while (b / 10 > 0) {
-
-            b = b / 10;
-
-        }
-
-    } else {
-
-        while (a / 10 >= (unsigned int) std::round(std::pow(10,pow))) {
-
-            a = a / 10;
-
-        }
-
-        while (b / 10 >= (unsigned int) std::round(std::pow(10,pow))) {
-
-            b = b / 10;
-
-        }
-
-    }
-
-
-    if (a == b)
-
-        return aLessB(x,y,pow + 1);  // recurse if this digit is the same 
-
-    else
-
-        return a < b;
+struct{
+    std::vector<unsigned int>::iterator s;
+    std::vector<unsigned int>::iteartor e;
+    unsigned int digit;
 
 }
-
-
 
 int getDigit(const std::string& str,unsigned int digit){
     if (digit >= str.size()) return -1;
     return str.at(digit) - '0';        
 }
 
-int radix_sort(std::vector<std::string*>::iterator s,
-               std::vector<std::string*>::iterator e, int digit){
+int getDigitInt(unsigned int a, unsigned int digit){
+    if (a <  (unsigned int) std::round(std::pow(10,digit))) return -1;
+    while (a / 10 >= (unsigned int) std::round(std::pow(10,digit))) {
+        a = a / 10;
+    }
+    return a%10;
+}
+
+int radix_sort(std::vector<unsigned int>::iterator s,
+               std::vector<unsigned int>::iterator e, int digit){
     
-    if (digit >=32 || std::distance(s,e) <= 1) return 0;
-    std::vector<std::vector<std::string*>> bucket(11,std::vector<std::string*>());
+    if (digit >=11 || std::distance(s,e) <= 1) return 0;
+    std::vector<std::vector<unsigned int>> bucket(11,std::vector<unsigned int>());
     for (auto c = s; c != e; ++c){
-        bucket[getDigit(**c,digit)+1].push_back(*c);
+        bucket[getDigitInt(*c,digit)+1].push_back(*c);
     }
     
     //radix sort next digit
     int accumulate_pos = 0;
     for (size_t i = 0; i < bucket.size(); ++i){
         radix_sort(bucket[i].begin(),bucket[i].end(),digit+1);
-        //for (auto iter = bucket[i].begin(); iter != bucket[i].end(); ++ iter){
-	//	std::cout << **iter << " ";
-	//}
-	//std::cout << std::endl;
-	std::copy(bucket[i].begin(),bucket[i].end(),s+accumulate_pos);
+    	std::copy(bucket[i].begin(),bucket[i].end(),s+accumulate_pos);
         accumulate_pos += bucket[i].size();
     }
     return 0;
 }
 
 
-
-
 void BucketSort::sort(unsigned int numCores) {
 
-    std::vector<std::string> numbers;
-    std::vector<std::vector<std::string*>> numbers_bucket(9,std::vector<std::string*>());
-    for ( auto k: numbersToSort){
-        numbers.push_back(std::to_string(k)); 
-    }
+    std::vector<std::vector<unsigned int>> numbers_bucket(9,std::vector<unsigned int>());
+    
  
-    for (auto iter = numbers.begin(); iter != numbers.end(); ++ iter){
-	numbers_bucket[getDigit(*iter,0)-1].push_back(&*iter);
+    for (auto iter = numbersToSort.begin(); iter != numbersToSort.end(); ++ iter){
+	    numbers_bucket[getDigitInt(*iter,0)-1].push_back(*iter);
     }
         
     std::vector<unsigned int> count;
     size_t temp = 0;
     for (auto &k:numbers_bucket){
         count.push_back(temp);
-	temp += k.size();
+	    temp += k.size();
     }
 
     std::vector<std::thread> threads;
@@ -126,15 +75,10 @@ void BucketSort::sort(unsigned int numCores) {
                                                 
                         radix_sort(numbers_bucket[k-1].begin(),numbers_bucket[k-1].end(),1); 
                          
-                        std::transform(numbers_bucket[k-1].begin(),
+                        std::copy(numbers_bucket[k-1].begin(),
                                        numbers_bucket[k-1].end(),
-                                       this->numbersToSort.begin()+count[k-1],
-                                       [](std::string* str){
-                                          return std::stoul(*str);
-                                       }
-                                
+                                       this->numbersToSort.begin()+count[k-1]
                                 );                        
-
                     }
                     
         };
